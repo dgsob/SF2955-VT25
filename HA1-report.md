@@ -77,6 +77,9 @@ The presented figure depicts a reasonable trajectory, that is:
 This is the required transition (observation) density.
 
 ### Problem 3: Mobility tracking using SMC methods (SIS)
+
+
+
 ### Problem 4: Mobility tracking using SMC methods (SISR)
 
 ### Problem 5: SMC-based model calibration
