@@ -3,9 +3,10 @@ using MAT, StatsBase
 include("./utility_functions.jl")
 
 function run_problem_3()
+function run_problem_3()
     verbose(true) # Whether to print info
     @info "------------------------------------------------"
-    @info "Starting Problem 43 Sequential Importance Sampling (SIS)"
+    @info "Starting Problem 3 Sequential Importance Sampling (SIS)"
     
     # --- Parameters ---
     Δt = 0.5
@@ -98,6 +99,8 @@ function run_problem_3()
 
     p2 = plot_weight_histograms(weight_hist_data)
     display(p2)
+
+    @info "Problem 3 finished."
 
     @info "Problem 3 finished."
 end
@@ -204,4 +207,5 @@ function run_sis(m::Int, N::Int, Δt::Float64, α::Float64,
     return tau_hat, weight_histograms
 end
 
+run_problem_3()
 run_problem_3()
