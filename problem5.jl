@@ -57,7 +57,7 @@ function run_problem_5()
     zeta_min = 0.1; zeta_max = 2.9; num_zeta_points = 50
     zeta_grid = range(zeta_min, stop=zeta_max, length=num_zeta_points)
     log_likelihoods = fill(-Inf, num_zeta_points) # Initialize with -Inf
-    base_seed = 12345
+    base_seed = 15
 
     @info "Starting grid search for ζ over [$(zeta_min), $(zeta_max)] ($num_zeta_points points)..."
     # Threads.@threads for parallel execution (start Julia with -t auto)

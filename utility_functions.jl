@@ -215,7 +215,7 @@ function plot_trajectory(tau_hat, stations, title_suffix="", padding_factor=0.2)
              aspect_ratio=:equal, legend=:outertopright,
              xlims=lims_x1,  # Set x-limits
              ylims=lims_x2,  # Set y-limits
-             size=(1000, 800))
+             size=(800, 600))
 
     scatter!(p, stations[1,:], stations[2,:],
              label="Base Stations", marker=:x, markersize=8, color=:red)
