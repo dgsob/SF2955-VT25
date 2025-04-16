@@ -1,4 +1,4 @@
-using Printf, Distributions, Logging
+using Printf, Distributions, Logging, Statistics
 
 # Just prints a matrix row by row with sprint
 function format_matrix_to_io(io::IO, matrix::AbstractMatrix; width::Int=6)
@@ -171,3 +171,97 @@ function normalize_log_weights(log_weights_unnorm::AbstractVector)
     return weights_norm, log_weights_norm, log_sum_w
 end
 
+# Old plotting
+# function plot_trajectory(tau_hat, stations, title_suffix="")
+#     p = plot(tau_hat[1,:], tau_hat[2,:],
+#              label="Estimated Trajectory",
+#              xlabel="X¹ Position (m)",
+#              ylabel="X² Position (m)",
+#              title="Estimated Trajectory" * title_suffix,
+#              marker=:circle, markersize=2, linewidth=1,
+#              aspect_ratio=:equal, legend=:outertopright)
+#     scatter!(p, stations[1,:], stations[2,:],
+#              label="Base Stations", marker=:x, markersize=8, color=:red)
+#     return p
+# end 
+
+function plot_trajectory(tau_hat, stations, title_suffix="", padding_factor=0.2)
+    # Calculate bounds of the trajectory
+    min_x1, max_x1 = extrema(tau_hat[1,:])
+    min_x2, max_x2 = extrema(tau_hat[2,:])
+
+    # Calculate the range (span) in each dimension
+    range_x1 = max_x1 - min_x1
+    range_x2 = max_x2 - min_x2
+
+    # Determine the center of the trajectory
+    center_x1 = mean(tau_hat[1,:])
+    center_x2 = mean(tau_hat[2,:])
+
+    # Determine the maximum range needed to maintain aspect ratio
+    max_range = max(range_x1, range_x2) * (1 + 2 * padding_factor) # Add padding
+
+    # Calculate limits centered around the trajectory, respecting aspect ratio
+    lims_x1 = (center_x1 - max_range / 2, center_x1 + max_range / 2)
+    lims_x2 = (center_x2 - max_range / 2, center_x2 + max_range / 2)
+
+    p = plot(tau_hat[1,:], tau_hat[2,:],
+             label="Estimated Trajectory",
+             xlabel="X¹ Position (m)",
+             ylabel="X² Position (m)",
+             title="Estimated Trajectory" * title_suffix,
+             marker=:circle, markersize=4, 
+             linewidth=1,
+             aspect_ratio=:equal, legend=:outertopright,
+             xlims=lims_x1,  # Set x-limits
+             ylims=lims_x2,  # Set y-limits
+             size=(1000, 800))
+
+    scatter!(p, stations[1,:], stations[2,:],
+             label="Base Stations", marker=:x, markersize=8, color=:red)
+    return p
+end
+
+function plot_weight_histograms(weight_histograms)
+    plots_list = []
+    sorted_times = sort(collect(keys(weight_histograms)))
+    for n in sorted_times
+        weights = weight_histograms[n]
+        # Filter weights slightly above zero for plotting, adjust threshold if needed
+        plot_weights = weights[weights .> 1e-10]
+        if isempty(plot_weights)
+             @warn "All weights near zero at n=$n. Histogram skipped."
+             continue
+        else
+             # Use enough bins to see detail, normalize to represent density
+             p_hist = histogram(plot_weights, bins=100, normalize=:pdf,
+                           title="Weight Histogram at n=$n (SISR)", xlabel="Normalized Weight", ylabel="Density",
+                           label="", xlims=(0, maximum(plot_weights)*1.05)) # Adjust xlim slightly
+        end
+        push!(plots_list, p_hist)
+    end
+    if !isempty(plots_list)
+        # Adjust layout and size for better viewing
+        num_plots = length(plots_list)
+        plot_layout = (num_plots, 1)
+        plot(plots_list..., layout=plot_layout, size=(700, 250 * num_plots))
+    else
+        @error "No valid histograms generated"
+    end
+end
+
+function systematic_resample(weights_norm::AbstractVector{Float64})
+    N = length(weights_norm)
+    indices = zeros(Int, N)
+    C = cumsum(weights_norm)
+    u1 = rand() / N
+    k = 1
+    for i in 1:N
+        u = u1 + (i - 1) / N
+        while k < N && u > C[k]
+            k += 1
+        end
+        indices[i] = k
+    end
+    return indices
+end

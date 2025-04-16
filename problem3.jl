@@ -167,7 +167,7 @@ function run_sis(m::Int, N::Int, Δt::Float64, α::Float64,
             end
         end
 
-        W_n_samples = rand(Wₙ, N) # Use passed Wₙ
+        W_n_samples = rand(Wₙ, N)
 
         term1 = Φ * X_prev_particles
         term3 = Ψw * W_n_samples
@@ -198,42 +198,6 @@ function run_sis(m::Int, N::Int, Δt::Float64, α::Float64,
 
     @info "\nSIS loop finished."
     return tau_hat, weight_histograms
-end
-
-function plot_trajectory(tau_hat, stations, title_suffix="")
-    p = plot(tau_hat[1,:], tau_hat[2,:],
-             label="Estimated Trajectory",
-             xlabel="X¹ Position (m)",
-             ylabel="X² Position (m)",
-             title="SIS Estimated Trajectory" * title_suffix,
-             marker=:circle, markersize=2, linewidth=1,
-             aspect_ratio=:equal, legend=:outertopright)
-    scatter!(p, stations[1,:], stations[2,:],
-             label="Base Stations", marker=:star, markersize=8, color=:red)
-    return p
-end
-
-function plot_weight_histograms(weight_histograms)
-    plots_list = []
-    sorted_times = sort(collect(keys(weight_histograms)))
-    for n in sorted_times
-        weights = weight_histograms[n]
-        non_zero_weights = weights[weights .> 1e-10]
-        if isempty(non_zero_weights)
-             @warn "All weights near zero at n=$n. Histogram skipped."
-             continue
-        else
-             p_hist = histogram(non_zero_weights, bins=50, normalize=:probability,
-                           title="Weight Histogram at n=$n", xlabel="Normalized Weight", ylabel="Density",
-                           label="", xlims=(0, maximum(non_zero_weights)*1.05))
-        end
-        push!(plots_list, p_hist)
-    end
-    if !isempty(plots_list)
-        plot(plots_list..., layout=(length(plots_list), 1), size=(600, 200 * length(plots_list)))
-    else
-        plot(title="No valid histograms generated")
-    end
 end
 
 main()

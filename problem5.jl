@@ -17,9 +17,15 @@ function main()
     η = 3.0
     # ζ (zeta_obs) is estimated
 
-    P_raw = [16.0 1.0 1.0 1.0 1.0; 1.0 16.0 1.0 1.0 1.0; 1.0 1.0 16.0 1.0 1.0; 1.0 1.0 1.0 16.0 1.0; 1.0 1.0 1.0 1.0 16.0]
-    P = P_raw ./ sum(P_raw[1,:])
+    P_raw = [16.0 1.0 1.0 1.0 1.0;
+             1.0 16.0 1.0 1.0 1.0;
+             1.0 1.0 16.0 1.0 1.0;
+             1.0 1.0 1.0 16.0 1.0;
+             1.0 1.0 1.0 1.0 16.0]
+    P = P_raw ./ sum(P_raw[1,:]) # Normalize rows
+
     Z_values = [[0.0, 0.0], [3.5, 0.0], [0.0, 3.5], [-3.5, 0.0], [0.0, -3.5]]
+
     μ₀ = zeros(6)
     Σ₀ = Diagonal([500.0, 5.0, 5.0, 200.0, 5.0, 5.0])
 
@@ -102,7 +108,7 @@ function main()
     display(p_likelihood) # Show likelihood plot
 
     title_suffix = " (N=$N, SISR, ζ̂ ≈ $(@sprintf("%.3f", best_zeta)))"
-    p_trajectory = plot_trajectory(best_tau_hat, stations, title_suffix) # Uses function from utils
+    p_trajectory = plot_trajectory(best_tau_hat, stations, title_suffix)
     display(p_trajectory) # Show trajectory plot
 
     @info "Problem 5 finished."

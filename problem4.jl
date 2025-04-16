@@ -232,32 +232,4 @@ function run_sisr(m::Int, N::Int, Δt::Float64, α::Float64, σ::Float64,
     return tau_hat, weight_histograms
 end
 
-function plot_weight_histograms(weight_histograms)
-    plots_list = []
-    sorted_times = sort(collect(keys(weight_histograms)))
-    for n in sorted_times
-        weights = weight_histograms[n]
-        # Filter weights slightly above zero for plotting, adjust threshold if needed
-        plot_weights = weights[weights .> 1e-10]
-        if isempty(plot_weights)
-             @warn "All weights near zero at n=$n. Histogram skipped."
-             continue
-        else
-             # Use enough bins to see detail, normalize to represent density
-             p_hist = histogram(plot_weights, bins=100, normalize=:pdf,
-                           title="Weight Histogram at n=$n (SISR)", xlabel="Normalized Weight", ylabel="Density",
-                           label="", xlims=(0, maximum(plot_weights)*1.05)) # Adjust xlim slightly
-        end
-        push!(plots_list, p_hist)
-    end
-    if !isempty(plots_list)
-        # Adjust layout and size for better viewing
-        num_plots = length(plots_list)
-        plot_layout = (num_plots, 1)
-        plot(plots_list..., layout=plot_layout, size=(700, 250 * num_plots))
-    else
-        @error "No valid histograms generated"
-    end
-end
-
 main()
