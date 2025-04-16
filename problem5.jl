@@ -2,7 +2,7 @@ using LinearAlgebra, Distributions, Plots, Random, Printf
 using MAT, StatsBase, Logging
 include("./utility_functions.jl")
 
-function main()
+function run_problem_5()
     verbose(true)
     @info "------------------------------------------------"
     @info "Starting Problem 5: Approximate MLE for Zeta (ζ)"
@@ -60,9 +60,8 @@ function main()
     base_seed = 12345
 
     @info "Starting grid search for ζ over [$(zeta_min), $(zeta_max)] ($num_zeta_points points)..."
-    # Use Threads.@threads for parallel execution if desired (start Julia with -t auto)
+    # Threads.@threads for parallel execution (start Julia with -t auto)
     Threads.@threads for i in 1:num_zeta_points
-    # for i in 1:num_zeta_points # Use this for sequential execution
         zeta_candidate = zeta_grid[i]
         current_seed = base_seed + i
         tid = Threads.threadid() # Get thread ID for logging if parallel
@@ -218,4 +217,4 @@ function run_sisr_for_likelihood(m::Int, N::Int, Δt::Float64, α::Float64, σ_p
     return tau_hat, total_log_likelihood
 end
 
-main()
+run_problem_5()

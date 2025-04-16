@@ -3,9 +3,8 @@ using MAT, StatsBase
 include("./utility_functions.jl")
 
 
-function main()
+function run_problem_4()
     verbose(true) # Whether to print info
-
     @info "------------------------------------------------"
     @info "Starting Problem 4: Sequential Importance Sampling with Resampling (SISR)"
 
@@ -94,23 +93,8 @@ function main()
     # Call histogram plotting function
     p2 = plot_weight_histograms(weight_hist_data)
     display(p2)
-    @info "Processing complete."
-end
-
-function systematic_resample(weights_norm::AbstractVector{Float64})
-    N = length(weights_norm)
-    indices = zeros(Int, N)
-    C = cumsum(weights_norm)
-    u1 = rand() / N
-    k = 1
-    for i in 1:N
-        u = u1 + (i - 1) / N
-        while k < N && u > C[k]
-            k += 1
-        end
-        indices[i] = k
-    end
-    return indices
+    
+    @info "Problem 4 finished."
 end
 
 function run_sisr(m::Int, N::Int, Δt::Float64, α::Float64, σ::Float64,
@@ -232,4 +216,4 @@ function run_sisr(m::Int, N::Int, Δt::Float64, α::Float64, σ::Float64,
     return tau_hat, weight_histograms
 end
 
-main()
+run_problem_4()

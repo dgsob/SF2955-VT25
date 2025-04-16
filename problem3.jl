@@ -2,8 +2,10 @@ using LinearAlgebra, Distributions, Plots, Random, Printf
 using MAT, StatsBase 
 include("./utility_functions.jl")
 
-function main()
+function run_problem_3()
     verbose(true) # Whether to print info
+    @info "------------------------------------------------"
+    @info "Starting Problem 43 Sequential Importance Sampling (SIS)"
     
     # --- Parameters ---
     Δt = 0.5
@@ -96,6 +98,8 @@ function main()
 
     p2 = plot_weight_histograms(weight_hist_data)
     display(p2)
+
+    @info "Problem 3 finished."
 end
 
 function run_sis(m::Int, N::Int, Δt::Float64, α::Float64,
@@ -200,4 +204,4 @@ function run_sis(m::Int, N::Int, Δt::Float64, α::Float64,
     return tau_hat, weight_histograms
 end
 
-main()
+run_problem_3()

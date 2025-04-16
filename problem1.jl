@@ -1,8 +1,11 @@
 using LinearAlgebra, Distributions, Plots, Random, Printf
 include("./utility_functions.jl")
 
-function main()
+function run_problem_1()
     verbose(true) # Whether to print info
+    @info "------------------------------------------------"
+    @info "Starting Problem 1: Motion Model Trajectory Simulation"
+
     # --- Set Parameters ---
     Δt = 0.5
     α = 0.6
@@ -49,7 +52,8 @@ function main()
             marker=:circle,
             markersize=2,
             linewidth=1)
-    # display(p)
+    display(p)
+    @info "Problem 1 finished."
 end
 
 function run_simulation(m::Int, Δt::Float64, α::Float64,
@@ -114,4 +118,4 @@ function run_simulation(m::Int, Δt::Float64, α::Float64,
     return X_trajectory
 end
 
-main()
+run_problem_1()
