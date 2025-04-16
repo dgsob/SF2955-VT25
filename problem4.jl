@@ -133,13 +133,13 @@ function run_sisr(m::Int, N::Int, Δt::Float64, α::Float64, σ::Float64,
     X_particles .= rand(X0_dist, N)
     Z_idx_particles .= rand(1:num_Z_states, N)
 
-    log_p_y0 = calculate_log_observation_density(Y_obs[:, 1], X_particles, stations, ν, η, zeta_sq) # Assumes helper defined
-    weights_norm, log_weights_norm_current, _ = normalize_log_weights(log_p_y0) # Assumes helper defined
+    log_p_y0 = calculate_log_observation_density(Y_obs[:, 1], X_particles, stations, ν, η, zeta_sq)
+    weights_norm, log_weights_norm_current, _ = normalize_log_weights(log_p_y0)
 
     tau_hat[1, 1] = sum(weights_norm .* (@view X_particles[1, :]))
     tau_hat[2, 1] = sum(weights_norm .* (@view X_particles[4, :]))
 
-    # Store initial weights for histogram if requested (though less useful for SISR)
+    # Store initial weights for histogram (though less useful for SISR)
     if 0 in hist_times 
         weight_histograms[0] = copy(weights_norm) 
     end
@@ -186,17 +186,17 @@ function run_sisr(m::Int, N::Int, Δt::Float64, α::Float64, σ::Float64,
 
         # --- Weighting ---
         yn = Y_obs[:, n+1]
-        log_p_yn = calculate_log_observation_density(yn, X_propagated, stations, ν, η, zeta_sq) # Assumes helper defined
+        log_p_yn = calculate_log_observation_density(yn, X_propagated, stations, ν, η, zeta_sq)
         log_weights_unnorm = log_weights_norm .+ log_p_yn # Start with -log(N)
 
         # --- Normalization ---
-        weights_norm, log_weights_norm_current, _ = normalize_log_weights(log_weights_unnorm) # Assumes helper defined
+        weights_norm, log_weights_norm_current, _ = normalize_log_weights(log_weights_unnorm)
 
         # --- Estimate tau_n ---
         tau_hat[1, n+1] = sum(weights_norm .* (@view X_propagated[1, :]))
         tau_hat[2, n+1] = sum(weights_norm .* (@view X_propagated[4, :]))
 
-        # --- Store Weights for Histogram (BEFORE resampling) ---
+        # --- Store Weights for Histogram (before resampling) ---
         if n in hist_times
             weight_histograms[n] = copy(weights_norm)
             @info "    Stored weights for histogram at n=$n"

@@ -131,7 +131,7 @@ function run_sisr_for_likelihood(m::Int, N::Int, Δt::Float64, α::Float64, σ_p
     zeta_sq = ζ_obs^2 # Calculate zeta squared for observation density function
     num_Z_states = length(Z_values)
 
-    Φ, Ψz, Ψw = define_model_matrices(Δt, α) # Assumes function is in utility_functions.jl
+    Φ, Ψz, Ψw = define_model_matrices(Δt, α)
 
     # Initialization...
     tau_hat = zeros(2, m + 1)
@@ -148,7 +148,7 @@ function run_sisr_for_likelihood(m::Int, N::Int, Δt::Float64, α::Float64, σ_p
 
     y0 = Y_obs[:, 1]
     log_p_y0 = calculate_log_observation_density(y0, X_particles, stations, ν, η, zeta_sq)
-    weights_norm_0, _, log_sum_w0 = normalize_log_weights(log_p_y0) # Use modified function
+    weights_norm_0, _, log_sum_w0 = normalize_log_weights(log_p_y0)
 
     if !isfinite(log_sum_w0)
         @warn "LogLik(n=0) non-finite ($log_sum_w0) for ζ=$ζ_obs. Aborting."
@@ -194,7 +194,7 @@ function run_sisr_for_likelihood(m::Int, N::Int, Δt::Float64, α::Float64, σ_p
         yn = Y_obs[:, n+1]
         log_p_yn = calculate_log_observation_density(yn, X_propagated, stations, ν, η, zeta_sq)
         log_weights_unnorm = fill(-log(N), N) .+ log_p_yn # Previous weights were 1/N
-        weights_norm, _, log_sum_w_n = normalize_log_weights(log_weights_unnorm) # Use modified func
+        weights_norm, _, log_sum_w_n = normalize_log_weights(log_weights_unnorm)
 
         if !isfinite(log_sum_w_n)
             @warn "LogLik(n=$n) non-finite ($log_sum_w_n) for ζ=$ζ_obs. Aborting."

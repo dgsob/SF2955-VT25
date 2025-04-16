@@ -3,7 +3,6 @@ using MAT, StatsBase
 include("./utility_functions.jl")
 
 function run_problem_3()
-function run_problem_3()
     verbose(true) # Whether to print info
     @info "------------------------------------------------"
     @info "Starting Problem 3 Sequential Importance Sampling (SIS)"
@@ -40,20 +39,20 @@ function run_problem_3()
     local stations, Y_obs, m # Make m modifiable based on loaded data
 
     try
-        @info "\nLoading station data from $stations_file_path..."
+        @info "Loading station data from $stations_file_path..."
         stations_data = matread(stations_file_path)
         if !haskey(stations_data, "pos_vec") 
-            @error "\nVariable 'pos_vec' not found in '$stations_file_path'" 
+            @error "Variable 'pos_vec' not found in '$stations_file_path'" 
         end
         stations = stations_data["pos_vec"]
 
-        @info "\nLoading RSSI data from $rssi_file_path..."
+        @info "Loading RSSI data from $rssi_file_path..."
         rssi_data = matread(rssi_file_path)
         if !haskey(rssi_data, "Y") 
-            @error "\nVariable 'Y' not found in '$rssi_file_path'" 
+            @error "Variable 'Y' not found in '$rssi_file_path'" 
         end
         Y_obs = rssi_data["Y"]
-        @info "\nData loaded successfully."
+        @info "Data loaded successfully."
 
         # Verify/Adjust dimensions for stations
         local s_st # Number of stations determined from data
@@ -64,7 +63,7 @@ function run_problem_3()
              stations = stations'
              dim_st_new, s_st = size(stations)
         else
-             @error "\nStations data 'pos_vec' must be 2xS or Sx2 (S>=1), got ($dim_st_orig, $s_st_orig)"
+             @error "Stations data 'pos_vec' must be 2xS or Sx2 (S>=1), got ($dim_st_orig, $s_st_orig)"
         end
 
         # Verify Y_obs dimensions and adjust m if needed
@@ -72,16 +71,16 @@ function run_problem_3()
         if m_plus_1 - 1 != m
             original_m = m
             m = m_plus_1 - 1
-            @info "\nAdjusted step count m based on loaded Y data: $original_m -> $m"
+            @info "Adjusted step count m based on loaded Y data: $original_m -> $m"
         end
         if s_loaded != s_st 
-            @error "\nDimension mismatch: Y has $s_loaded rows, stations implies $s_st stations." 
+            @error "Dimension mismatch: Y has $s_loaded rows, stations implies $s_st stations." 
         end
-        @info "\nUsing data dimensions: m=$m, s=$s_loaded"
+        @info "Using data dimensions: m=$m, s=$s_loaded"
 
     catch e
-        @error "\nError during data loading or verification: $e"
-        @error "\nPlease ensure '$stations_file_path' (containing 'pos_vec') and '$rssi_file_path' (containing 'Y') exist and are valid."
+        @error "Error during data loading or verification: $e"
+        @error "Please ensure '$stations_file_path' (containing 'pos_vec') and '$rssi_file_path' (containing 'Y') exist and are valid."
         return
     end
 
@@ -92,15 +91,13 @@ function run_problem_3()
     X_trajectory, weight_hist_data = run_sis(m, N, Δt, α, P, Z_values, μ₀, Σ₀, Y_obs, stations, ν, η, ζ, Wₙ)
 
     # --- Plotting Results for Problem 3 ---
-    @info "\nPlotting results..."
+    @info "Plotting results..."
     # Pass the entire 2x(m+1) trajectory estimate matrix to the plotting function
     p1 = plot_trajectory(X_trajectory, stations, " (N=$N, SIS)")
     display(p1)
 
     p2 = plot_weight_histograms(weight_hist_data)
     display(p2)
-
-    @info "Problem 3 finished."
 
     @info "Problem 3 finished."
 end
@@ -134,7 +131,7 @@ function run_sis(m::Int, N::Int, Δt::Float64, α::Float64,
     weight_histograms = Dict{Int, Vector{Float64}}()
 
     # --- Initialization (n=0) ---
-    @info "\nInitializing SIS (N=$N)..."
+    @info "Initializing SIS (N=$N)..."
     X0_dist = MvNormal(μ₀, Σ₀)
     X_particles .= rand(X0_dist, N)
     Z_idx_particles .= rand(1:num_Z_states, N)
@@ -149,11 +146,11 @@ function run_sis(m::Int, N::Int, Δt::Float64, α::Float64,
         weight_histograms[0] = copy(weights_norm) 
     end
 
-    @info "\nStarting SIS loop (m=$m)..."
+    @info "Starting SIS loop (m=$m)..."
     # --- Iteration (n=1 to m) ---
     for n in 1:m
         if n % 50 == 0 
-            @info "\n  Processing step $n/$m..."
+            @info "  Processing step $n/$m..."
         end
 
         X_prev_particles .= X_particles
@@ -199,13 +196,12 @@ function run_sis(m::Int, N::Int, Δt::Float64, α::Float64,
         # --- Store Weights for Histogram ---
         if n in hist_times
             weight_histograms[n] = copy(weights_norm)
-            @info "\n    Stored weights for histogram at n=$n"
+            @info "    Stored weights for histogram at n=$n"
         end
     end # End of loop n=1 to m
 
-    @info "\nSIS loop finished."
+    @info "SIS loop finished."
     return tau_hat, weight_histograms
 end
 
-run_problem_3()
 run_problem_3()
