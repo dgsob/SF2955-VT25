@@ -150,7 +150,7 @@ function run_sisr(m::Int, N::Int, Δt::Float64, α::Float64, σ::Float64,
     Z_idx_particles .= rand(1:num_Z_states, N)
 
     log_p_y0 = calculate_log_observation_density(Y_obs[:, 1], X_particles, stations, ν, η, zeta_sq) # Assumes helper defined
-    weights_norm, log_weights_norm_current = normalize_log_weights(log_p_y0) # Assumes helper defined
+    weights_norm, log_weights_norm_current, _ = normalize_log_weights(log_p_y0) # Assumes helper defined
 
     tau_hat[1, 1] = sum(weights_norm .* (@view X_particles[1, :]))
     tau_hat[2, 1] = sum(weights_norm .* (@view X_particles[4, :]))
@@ -206,7 +206,7 @@ function run_sisr(m::Int, N::Int, Δt::Float64, α::Float64, σ::Float64,
         log_weights_unnorm = log_weights_norm .+ log_p_yn # Start with -log(N)
 
         # --- Normalization ---
-        weights_norm, log_weights_norm_current = normalize_log_weights(log_weights_unnorm) # Assumes helper defined
+        weights_norm, log_weights_norm_current, _ = normalize_log_weights(log_weights_unnorm) # Assumes helper defined
 
         # --- Estimate tau_n ---
         tau_hat[1, n+1] = sum(weights_norm .* (@view X_propagated[1, :]))

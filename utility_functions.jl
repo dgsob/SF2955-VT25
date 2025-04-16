@@ -126,30 +126,48 @@ function normalize_log_weights(log_weights_unnorm::AbstractVector)
     N = length(log_weights_unnorm)
     log_weights_norm = zeros(N)
     weights_norm = zeros(N)
+    log_sum_w = -Inf # Initialize log_sum_w
 
-    if any(!isfinite, log_weights_unnorm)
-         @warn "Non-finite values found in unnormalized log weights. Assigning uniform weights."
-         log_weights_unnorm .= 0.0
+    non_finite_idx = .!isfinite.(log_weights_unnorm)
+    if any(non_finite_idx)
+         @warn "Non-finite values found in unnormalized log weights. Handling them."
+         finite_max = -Inf
+         if any(.!non_finite_idx)
+             finite_max = maximum(log_weights_unnorm[.!non_finite_idx])
+         else
+             finite_max = 0.0
+         end
+         log_weights_unnorm[non_finite_idx] .= finite_max - 700.0
     end
 
-    if isempty(log_weights_unnorm) return weights_norm, log_weights_norm end
+    if isempty(log_weights_unnorm)
+        return weights_norm, log_weights_norm, log_sum_w # Return -Inf for log_sum_w
+    end
+
     L_max = maximum(log_weights_unnorm)
-    if !isfinite(L_max) L_max = 0.0 end
+    if !isfinite(L_max)
+        @warn "Maximum log weight is not finite. Assigning uniform weights."
+        log_weights_norm .= -log(N)
+        weights_norm .= 1.0 / N
+        log_sum_w = -Inf
+        return weights_norm, log_weights_norm, log_sum_w
+    end
 
     w_tilde = exp.(log_weights_unnorm .- L_max)
     sum_w_tilde = sum(w_tilde)
 
-    if sum_w_tilde > 1e-100 && isfinite(sum_w_tilde) # Check > 0 before log
-        log_sum_w = L_max + log(sum_w_tilde)
-        log_weights_norm .= log_weights_unnorm .- log_sum_w
+    if sum_w_tilde > 1e-100 && isfinite(sum_w_tilde)
+        log_sum_w = L_max + log(sum_w_tilde) # Log of sum of unnormalized weights
+        log_weights_norm .= log_weights_unnorm .- log_sum_w # Normalize
         weights_norm .= exp.(log_weights_norm)
-        weights_norm ./= sum(weights_norm)
+        weights_norm ./= sum(weights_norm) # Ensure sum to 1 numerically
     else
-         @warn "Weight normalization failed (sum zero or non-finite). Assigning uniform weights."
+         @warn "Weight normalization failed (sum approx zero or non-finite). Assigning uniform weights."
          log_weights_norm .= -log(N)
          weights_norm .= 1.0 / N
+         # log_sum_w remains -Inf
     end
 
-    return weights_norm, log_weights_norm
+    return weights_norm, log_weights_norm, log_sum_w
 end
 

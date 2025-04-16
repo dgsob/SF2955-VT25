@@ -7,8 +7,8 @@ function main()
     Δt = 0.5
     α = 0.6
     σ = 0.5
-    m = 150
-    Random.seed!(15)
+    m = 15000
+    Random.seed!(9)
 
     # Transition matrix P
     P = (1/20) * [16.0 1.0 1.0 1.0 1.0;
