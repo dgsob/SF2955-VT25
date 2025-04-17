@@ -14,7 +14,7 @@ function run_problem_4()
     σ = 0.5
     m = 500 # Number of steps - Will be adjusted if data differs
     N = 10000 # Number of particles
-    Random.seed!(15) # Use same seed for comparison with SIS
+    Random.seed!(73)
 
     ν = 90.0
     η = 3.0
@@ -91,7 +91,7 @@ function run_problem_4()
     display(p1)
 
     # Call histogram plotting function
-    p2 = plot_weight_histograms(weight_hist_data)
+    p2 = plot_weight_histograms(weight_hist_data, "SISR")
     display(p2)
     
     @info "Problem 4 finished."
@@ -199,7 +199,8 @@ function run_sisr(m::Int, N::Int, Δt::Float64, α::Float64, σ::Float64,
         # --- Store Weights for Histogram (before resampling) ---
         if n in hist_times
             weight_histograms[n] = copy(weights_norm)
-            @info "    Stored weights for histogram at n=$n"
+            ess_n = calculate_ess(weights_norm)
+            @info "    Stored weights for histogram at n=$n. ESS ≈ $(@sprintf("%.2f", ess_n)) / $N"
         end
 
         # --- Resampling ---

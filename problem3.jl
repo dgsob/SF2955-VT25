@@ -13,7 +13,7 @@ function run_problem_3()
     σ = 0.5
     m = 500 # Number of steps - will be adjusted based on loaded Y if necessary
     N = 10000 # Number of particles
-    Random.seed!(15)
+    Random.seed!(83)
 
     # Observation model parameters
     ν = 90.0
@@ -96,7 +96,7 @@ function run_problem_3()
     p1 = plot_trajectory(X_trajectory, stations, " (N=$N, SIS)")
     display(p1)
 
-    p2 = plot_weight_histograms(weight_hist_data)
+    p2 = plot_weight_histograms(weight_hist_data, "SIS")
     display(p2)
 
     @info "Problem 3 finished."
@@ -127,7 +127,7 @@ function run_sis(m::Int, N::Int, Δt::Float64, α::Float64,
     Z_idx_prev_particles = zeros(Int, N)
     log_weights_norm = zeros(N)     # Stores log(W_{n-1}) for start of step n
 
-    hist_times = [m ÷ 4, m ÷ 2, m]
+    hist_times = [5, 15, 50]
     weight_histograms = Dict{Int, Vector{Float64}}()
 
     # --- Initialization (n=0) ---
@@ -187,16 +187,17 @@ function run_sis(m::Int, N::Int, Δt::Float64, α::Float64,
         log_weights_unnorm = log_weights_norm .+ log_p_yn
 
         # --- Normalize Weights ---
-        weights_norm, log_weights_norm = normalize_log_weights(log_weights_unnorm)
+        weights_norm, log_weights_norm, _ = normalize_log_weights(log_weights_unnorm)
 
         # --- Estimate tau_n ---
         tau_hat[1, n+1] = sum(weights_norm .* (@view X_particles[1, :]))
         tau_hat[2, n+1] = sum(weights_norm .* (@view X_particles[4, :]))
 
-        # --- Store Weights for Histogram ---
+        # --- Store Weights and calculate ESS for Histogram ---
         if n in hist_times
             weight_histograms[n] = copy(weights_norm)
-            @info "    Stored weights for histogram at n=$n"
+            ess_n = calculate_ess(weights_norm)
+            @info "    Stored weights for histogram at n=$n. ESS ≈ $(@sprintf("%.2f", ess_n)) / $N"
         end
     end # End of loop n=1 to m
 

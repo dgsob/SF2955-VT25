@@ -185,7 +185,7 @@ end
 #     return p
 # end 
 
-function plot_trajectory(tau_hat, stations, title_suffix="", padding_factor=0.2)
+function plot_trajectory(tau_hat, stations, title_suffix="", padding_factor=0.5)
     # Calculate bounds of the trajectory
     min_x1, max_x1 = extrema(tau_hat[1,:])
     min_x2, max_x2 = extrema(tau_hat[2,:])
@@ -210,7 +210,7 @@ function plot_trajectory(tau_hat, stations, title_suffix="", padding_factor=0.2)
              xlabel="X¹ Position (m)",
              ylabel="X² Position (m)",
              title="Estimated Trajectory" * title_suffix,
-             marker=:circle, markersize=4, 
+             marker=:circle, markersize=2, 
              linewidth=1,
              aspect_ratio=:equal, legend=:outertopright,
              xlims=lims_x1,  # Set x-limits
@@ -222,20 +222,19 @@ function plot_trajectory(tau_hat, stations, title_suffix="", padding_factor=0.2)
     return p
 end
 
-function plot_weight_histograms(weight_histograms)
+function plot_weight_histograms(weight_histograms, method)
     plots_list = []
     sorted_times = sort(collect(keys(weight_histograms)))
     for n in sorted_times
         weights = weight_histograms[n]
-        # Filter weights slightly above zero for plotting, adjust threshold if needed
-        plot_weights = weights[weights .> 1e-10]
+        plot_weights = weights[weights .> 1e-10] # Filter weights slightly above zero for plotting
         if isempty(plot_weights)
              @warn "All weights near zero at n=$n. Histogram skipped."
              continue
         else
              # Use enough bins to see detail, normalize to represent density
              p_hist = histogram(plot_weights, bins=100, normalize=:pdf,
-                           title="Weight Histogram at n=$n (SISR)", xlabel="Normalized Weight", ylabel="Density",
+                           title="Weight Histogram at n=$n ($method)", xlabel="Normalized Weight", ylabel="Density",
                            label="", xlims=(0, maximum(plot_weights)*1.05)) # Adjust xlim slightly
         end
         push!(plots_list, p_hist)
@@ -264,4 +263,13 @@ function systematic_resample(weights_norm::AbstractVector{Float64})
         indices[i] = k
     end
     return indices
+end
+
+function calculate_ess(weights_norm::AbstractVector{Float64})
+    N = length(weights_norm)
+    sum_sq_weights = sum(weights_norm.^2)
+    if N == 0 || sum_sq_weights < 1e-12
+        return 0.0
+    end
+    return 1.0 / sum_sq_weights
 end

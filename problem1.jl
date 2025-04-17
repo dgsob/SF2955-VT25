@@ -10,8 +10,8 @@ function run_problem_1()
     Δt = 0.5
     α = 0.6
     σ = 0.5
-    m = 15000
-    Random.seed!(9)
+    m = 500
+    Random.seed!(83)
 
     # Transition matrix P
     P = (1/20) * [16.0 1.0 1.0 1.0 1.0;
