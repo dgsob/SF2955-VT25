@@ -4,7 +4,7 @@
 #### Component 1: Direct Sampling/MCMC Introduction
 * Rejection sampling (3 problems $\rightarrow$ 3.5h) 🗹
 * Inversion method (1 problem $\rightarrow$ 0.5h) 🗹
-* Conditional distributions and sampling by means of MCMC (1 problem)
+* Conditional distributions for sampling by means of MCMC (1 problem)
 
 #### Component 2: Monte Carlo Methods
 * Slice sampler, Gibbs sampler (1 problem)
