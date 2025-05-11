@@ -29,8 +29,16 @@ function get_breakpoints_string(d)
     end
 end
 
+function get_label(d, sign)
+    if sign == "λ"
+        return ["λ$i" for i in 1:d]
+    elseif sign == "t"
+        return ["t$i" for i in 1:(d-1)]
+    end
+end
+
 # Hybrid MCMC function
-function hybrid_mcmc(n_iter, d, ρ=0.5, ϑ=2.0)
+function hybrid_mcmc(n_iter, d, ρ=0.2, ϑ=2.0)
     # Initialize parameters
     t = collect(range(t1, stop=t_d1, length=d+1))
     λ = rand(Gamma(2, 1.0), d)
@@ -88,24 +96,26 @@ for d in 2:5  # Corresponds to the breakpoints
     println("Running with $d intervals (d-1 = $(d-1) $breakpoints_string)")
     θ_s, λ_s, t_s = hybrid_mcmc(n_iter, d)
     
-    # Create a single figure with 3 subplots
+    # Create a single figure with 3 subplots TODO: The labels and titles are not all visible on the resulting figure - fix that
     p = plot(layout=(1, 3), size=(1200, 300), title="Posteriors for $(d-1) $breakpoints_string")
     
     # Histogram for θ
-    histogram!(p[1], θ_s[1001:end], label="", xlabel="θ", ylabel="Frequency", title="Posterior θ")
+    bin_length = 77 # standarized length for clearer comparison
+    bin_edges_θ = range(0, 4, length=bin_length)
+    histogram!(p[1], θ_s[1001:end], label="", xlabel="", ylabel="Frequency", title="Posterior θ", bins=bin_edges_θ)
     
     # Histogram for λ
     λ_flat = vec(λ_s[1001:end, :])  # Flatten the λ samples
     λ_groups = repeat(1:d, inner=n_iter-1000)  # Create group labels for each λ_i
     λ_max = maximum(λ_s[1001:end, :])
-    bin_edges_λ = range(0, max(10, λ_max * 1.1), length=77)
-    histogram!(p[2], λ_flat, group=λ_groups, label=["λ$i" for i in 1:d], xlabel="λ", ylabel="Frequency", alpha=0.6, bins=bin_edges_λ, title="Disaster Intensities")
+    bin_edges_λ = range(0, 8, length=bin_length)
+    histogram!(p[2], λ_flat, group=λ_groups, label=permutedims(["λ$i" for i in 1:d]), xlabel="", ylabel="", alpha=0.6, title="Disaster Intensities λ", bins=bin_edges_λ)
     
     # Histogram for t
     t_flat = vec(t_s[1001:end, 2:d])  # Flatten the t samples
     t_groups = repeat(1:(d-1), inner=n_iter-1000)  # Create group labels for each breakpoint
-    bin_edges_t = range(1851, 1963, length=77)
-    histogram!(p[3], t_flat, group=t_groups, label=["t$i" for i in 2:d], xlabel="t", ylabel="Frequency", alpha=0.6, bins=bin_edges_t, title="Breakpoints")
+    bin_edges_t = range(1851, 1963, length=bin_length)
+    histogram!(p[3], t_flat, group=t_groups, label=permutedims(["t$i" for i in 1:(d-1)]), xlabel="", ylabel="", alpha=0.6, title="Breakpoints t", bins=bin_edges_t)
     
     display(p)
 end
