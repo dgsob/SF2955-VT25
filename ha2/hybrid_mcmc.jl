@@ -1,0 +1,111 @@
+using Distributions, StatsPlots, DataFrames, CSV
+
+# Load coal mine disaster data
+data = CSV.read(joinpath(@__DIR__, "coal-mine.csv"), DataFrame, header=false)[:, 1]
+τ = data
+t1, t_d1 = 1851.0, 1963.0
+n = length(τ)
+
+# Function to compute n_i(τ)
+function compute_ni(t, τ)
+    d = length(t) - 1
+    ni = zeros(Int, d)
+    for τj in τ
+        for i in 1:d
+            if t[i] <= τj < t[i+1]
+                ni[i] += 1
+                break
+            end
+        end
+    end
+    return ni
+end
+
+function get_breakpoints_string(d)
+    if d == 1  
+        return "breakpoint"
+    else
+        return "breakpoints"
+    end
+end
+
+# Hybrid MCMC function
+function hybrid_mcmc(n_iter, d, ρ=0.5, ϑ=2.0)
+    # Initialize parameters
+    t = collect(range(t1, stop=t_d1, length=d+1))
+    λ = rand(Gamma(2, 1.0), d)
+    θ = rand(Gamma(2, ϑ))
+    
+    # Storage for samples
+    θ_samples = zeros(n_iter)
+    λ_samples = zeros(n_iter, d)
+    t_samples = zeros(n_iter, d+1)
+    
+    for k in 1:n_iter
+        # Gibbs for θ
+        θ = rand(Gamma(2d + 2, 1.0 / (ϑ + sum(λ))))
+        
+        # Gibbs for λ
+        ni = compute_ni(t, τ)
+        for i in 1:d
+            λ[i] = rand(Gamma(ni[i] + 2, 1.0 / (t[i+1] - t[i] + θ)))
+        end
+        
+        # Metropolis-Hastings for t (random walk)
+        i = rand(2:d)  # breakpoint to update
+        R = ρ * (t[i+1] - t[i-1])
+        t_star = t[i] + rand(Uniform(-R, R))
+        
+        # Simple check if t is ordered
+        if t_star > t[i-1] && t_star < t[i+1]
+            t_prop = copy(t)
+            t_prop[i] = t_star
+            ni_prop = compute_ni(t_prop, τ)
+            
+            # Log posterior ratio (up to constant)
+            log_p_curr = sum(ni .* log.(λ)) - sum(λ .* (t[2:end] - t[1:end-1]))
+            log_p_prop = sum(ni_prop .* log.(λ)) - sum(λ .* (t_prop[2:end] - t_prop[1:end-1]))
+            log_alpha = log_p_prop - log_p_curr
+            
+            if log(rand()) < log_alpha
+                t[i] = t_star
+            end
+        end
+        
+        # Store samples
+        θ_samples[k] = θ
+        λ_samples[k, :] = λ
+        t_samples[k, :] = t
+    end
+    
+    return θ_samples, λ_samples, t_samples
+end
+
+# Run for different numbers of breakpoints
+n_iter = 10000
+for d in 2:5  # Corresponds to the breakpoints
+    breakpoints_string = get_breakpoints_string(d-1)
+    println("Running with $d intervals (d-1 = $(d-1) $breakpoints_string)")
+    θ_s, λ_s, t_s = hybrid_mcmc(n_iter, d)
+    
+    # Create a single figure with 3 subplots
+    p = plot(layout=(1, 3), size=(1200, 300), title="Posteriors for $(d-1) $breakpoints_string")
+    
+    # Histogram for θ
+    histogram!(p[1], θ_s[1001:end], label="", xlabel="θ", ylabel="Frequency", title="Posterior θ")
+    
+    # Histogram for λ
+    λ_flat = vec(λ_s[1001:end, :])  # Flatten the λ samples
+    λ_groups = repeat(1:d, inner=n_iter-1000)  # Create group labels for each λ_i
+    λ_max = maximum(λ_s[1001:end, :])
+    bin_edges_λ = range(0, max(10, λ_max * 1.1), length=77)
+    histogram!(p[2], λ_flat, group=λ_groups, label=["λ$i" for i in 1:d], xlabel="λ", ylabel="Frequency", alpha=0.6, bins=bin_edges_λ, title="Disaster Intensities")
+    
+    # Histogram for t
+    t_flat = vec(t_s[1001:end, 2:d])  # Flatten the t samples
+    t_groups = repeat(1:(d-1), inner=n_iter-1000)  # Create group labels for each breakpoint
+    bin_edges_t = range(1851, 1963, length=77)
+    histogram!(p[3], t_flat, group=t_groups, label=["t$i" for i in 2:d], xlabel="t", ylabel="Frequency", alpha=0.6, bins=bin_edges_t, title="Breakpoints")
+    
+    display(p)
+end
