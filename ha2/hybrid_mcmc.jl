@@ -92,7 +92,7 @@ function hybrid_mcmc(n_iter, d, ρ=0.2, ϑ=2.0)
 end
 
 # Run for different numbers of breakpoints
-n_iter = 25000
+n_iter = 15000
 for d in 2:5  # Corresponds to the breakpoints
     breakpoints_string = get_breakpoints_string(d-1)
     println("Running with $d intervals (d-1 = $(d-1) $breakpoints_string)")
@@ -108,13 +108,13 @@ for d in 2:5  # Corresponds to the breakpoints
     histogram!(p[1], θ_s[1001:end], label="", xlabel="Rate parameter θ", ylabel="Frequency", #title="Posterior θ", 
                bins=bin_edges_θ)
     
-    # Histogram for λ
+    # Histogram for λ TODO: Change legend labels from t₁,..; λ₁,... to t's (specific breakpoint years) and intervals marked with t's (specific breakpoint years)
     λ_flat = vec(λ_s[1001:end, :])  # Flatten the λ samples
     λ_groups = repeat(1:d, inner=n_iter-1000)  # Create group labels for each λ_i
     λ_max = maximum(λ_s[1001:end, :])
     bin_edges_λ = range(0, 8, length=bin_length)
     histogram!(p[2], λ_flat, group=λ_groups, label=permutedims(["λ$i" for i in 1:d]), xlabel="Disaster Intensities λ", ylabel="", alpha=0.6, #title="Disaster Intensities λ", 
-               bins=bin_edges_λ)
+               bins=bin_edges_λ, legend = :topright)
     
     # Histogram for t
     t_flat = vec(t_s[1001:end, 2:d])  # Flatten the t samples
@@ -122,7 +122,9 @@ for d in 2:5  # Corresponds to the breakpoints
     bin_edges_t = range(1851, 1963, length=bin_length)
     _breakpoints_string = get_breakpoints_string(d-1, true)
     histogram!(p[3], t_flat, group=t_groups, label=permutedims(["t$i" for i in 1:(d-1)]), xlabel="$_breakpoints_string t", ylabel="", alpha=0.6, #title="Breakpoints t", 
-               bins=bin_edges_t)
+               bins=bin_edges_t, legend = :topleft)
     
-    display(p)
+    # display(p)
+    savefig(p, "figure_for_$(d-1)_$breakpoints_string.png")
+    println("Figures for $d intervals saved")
 end
