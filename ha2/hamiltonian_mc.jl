@@ -78,17 +78,3 @@ function hmc(y, σ, Σ_inv, θ_init, ε, L, N)
     acceptance_rate = accept_count / N
     return samples, acceptance_rate
 end
-
-# Set parameters
-θ_init = [0.0, 0.0]  # Initial arbitrary θ 
-ε = 0.1  # Step size (variable)
-L = 10   # Number of leapfrog steps (variable)
-N = 10000  # Number of samples
-
-# Run HMC
-Random.seed!(77)
-samples, acceptance_rate = hmc(y, σ, Σ_inv, θ_init, ε, L, N)
-
-println("Acceptance rate: ", acceptance_rate)
-
-histogram2d(samples[:, 1], samples[:, 2], bins=50, title="Posterior Samples Heatmap", xlabel="θ₁", ylabel="θ₂")
