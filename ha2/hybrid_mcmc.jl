@@ -2,7 +2,7 @@ using Distributions, StatsPlots, DataFrames, CSV, Random
 include("./auxiliary_functions.jl")
 
 # Load coal mine disaster data
-data = CSV.read(joinpath(@__DIR__, "coal-mine.csv"), DataFrame, header=false)[:, 1]
+data = CSV.read(joinpath(@__DIR__, "data/coal-mine.csv"), DataFrame, header=false)[:, 1]
 τ = data
 t1, t_d1 = 1851.0, 1963.0
 n = length(τ)
