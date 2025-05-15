@@ -73,9 +73,13 @@ plot!(p_acf[2], 0:max_lag, hmc_acf[:, 2], label="HMC θ₂", title="Autocorrelat
       xlabel="Lag", ylabel="ACF", color=:blue)
 plot!(p_acf[2], 0:max_lag, mh_acf[:, 2], label="MH θ₂", linestyle=:dash, color=:red)
 
-# Display plots
-display(p_heatmap)
-display(p_acf)
+# Display figures
+# display(p_heatmap)
+# display(p_acf)
+
+# Save figures
+savefig(p_heatmap, "heatmap.png")
+savefig(p_acf, "autocorrelation.png")
 
 println("Processing finished \U0001F973")
 
