@@ -7,7 +7,7 @@ using Plots
 using Statistics
 
 # Load data from hmc-observations.csv
-data = CSV.read(joinpath(@__DIR__, "data/hmc-observations.csv"), DataFrame, header=false)
+data = CSV.read(joinpath(@__DIR__, "hmc-observations.csv"), DataFrame, header=false)
 y = data[:, 1]
 
 # Define model parameters
