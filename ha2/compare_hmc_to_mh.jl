@@ -50,9 +50,10 @@ mh_samples, mh_acceptance_rate = metropolis_hastings(y, σ, Σ_inv, θ_init, ζ,
 # Compare acceptance rate
 println("HMC Acceptance rate: ", hmc_acceptance_rate)
 println("MH Acceptance rate: ", mh_acceptance_rate)
-# TODO: Fix heatmap plots width. Add margins to ACF plots.
+
 # Compare heatmaps
-p_heatmap = plot(layout=(1, 2), size=(800, 400))
+p_heatmap = plot(layout=(1, 2), size=(1000, 300),
+                 left_margin=20Plots.px, bottom_margin=20Plots.px, top_margin=10Plots.px)
 histogram2d!(p_heatmap[1], hmc_samples[:, 1], hmc_samples[:, 2], bins=50, 
              title="HMC Posterior Samples", xlabel="θ₁", ylabel="θ₂", colorbar=true)
 histogram2d!(p_heatmap[2], mh_samples[:, 1], mh_samples[:, 2], bins=50, 
@@ -63,7 +64,8 @@ hmc_acf = autocorrelation(hmc_samples, max_lag)
 mh_acf = autocorrelation(mh_samples, max_lag)
 
 # Compare autocorrelation
-p_acf = plot(layout=(1, 2), size=(800, 400))
+p_acf = plot(layout=(1, 2), size=(700, 300),
+             left_margin=10Plots.px, bottom_margin=10Plots.px, top_margin=10Plots.px)
 plot!(p_acf[1], 0:max_lag, hmc_acf[:, 1], label="HMC θ₁", title="Autocorrelation for θ₁", 
       xlabel="Lag", ylabel="ACF", color=:blue)
 plot!(p_acf[1], 0:max_lag, mh_acf[:, 1], label="MH θ₁", linestyle=:dash, color=:red)
