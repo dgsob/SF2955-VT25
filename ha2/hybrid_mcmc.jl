@@ -75,43 +75,45 @@ function hybrid_mcmc(n_iter, d, ρ=0.2, ϑ=2.0)
 end
 
 # Run for different numbers of breakpoints
-Random.seed!(77)
-n_iter = 77000
-for d in 2:5  # Corresponds to the breakpoints
-    breakpoints_string = get_breakpoints_string(d-1)
-    println("Running with $d intervals (d-1 = $(d-1) $breakpoints_string)")
-    θ_s, λ_s, t_s = hybrid_mcmc(n_iter, d)
+function run_part_one()
+    Random.seed!(77)
+    n_iter = 77000
+    for d in 2:5  # Corresponds to the breakpoints
+        breakpoints_string = get_breakpoints_string(d-1)
+        println("Running with $d intervals (d-1 = $(d-1) $breakpoints_string)")
+        θ_s, λ_s, t_s = hybrid_mcmc(n_iter, d)
 
-    # Generate labels using the function
-    t_labels, λ_labels = generate_labels(t_s, d, t1, t_d1)
-    
-    # Create a single figure with 3 subplots
-    p = plot(layout=(1, 3), size=(1200, 300), plot_title="Posteriors for $(d-1) $breakpoints_string",
-             left_margin=21Plots.px, bottom_margin=25Plots.px, top_margin=25Plots.px)
-    
-    # Histogram for θ
-    bin_length = 77 # standarized arbitrary length for clearer comparison
-    bin_edges_θ = range(0, 4, length=bin_length)
-    histogram!(p[1], θ_s[1001:end], label="", xlabel="Rate parameter θ", ylabel="Frequency", #title="Posterior θ", 
-               bins=bin_edges_θ)
-    
-    # Histogram for λ
-    λ_flat = vec(λ_s[1001:end, :])  # Flatten the λ samples
-    λ_groups = repeat(1:d, inner=n_iter-1000)  # Create group labels for each λ_i
-    λ_max = maximum(λ_s[1001:end, :])
-    bin_edges_λ = range(0, 8, length=bin_length)
-    histogram!(p[2], λ_flat, group=λ_groups, label=permutedims(λ_labels), xlabel="Disaster Intensities λ", ylabel="", alpha=0.6, #title="Disaster Intensities λ", 
-               bins=bin_edges_λ, legend = :topright)
-    
-    # Histogram for t
-    t_flat = vec(t_s[1001:end, 2:d])  # Flatten the t samples
-    t_groups = repeat(1:(d-1), inner=n_iter-1000)  # Create group labels for each breakpoint
-    bin_edges_t = range(1851, 1963, length=bin_length)
-    _breakpoints_string = get_breakpoints_string(d-1, true)
-    histogram!(p[3], t_flat, group=t_groups, label=permutedims(t_labels), xlabel="$_breakpoints_string t", ylabel="", alpha=0.6, #title="Breakpoints t", 
-               bins=bin_edges_t, legend = :topleft)
-    
-    # display(p)
-    savefig(p, "figure_for_$(d-1)_$breakpoints_string.png")
-    println("Figures for $d intervals saved")
+        # Generate labels using the function
+        t_labels, λ_labels = generate_labels(t_s, d, t1, t_d1)
+        
+        # Create a single figure with 3 subplots
+        p = plot(layout=(1, 3), size=(1200, 300), plot_title="Posteriors for $(d-1) $breakpoints_string",
+                left_margin=21Plots.px, bottom_margin=25Plots.px, top_margin=25Plots.px)
+        
+        # Histogram for θ
+        bin_length = 77 # standarized arbitrary length for clearer comparison
+        bin_edges_θ = range(0, 4, length=bin_length)
+        histogram!(p[1], θ_s[1001:end], label="", xlabel="Rate parameter θ", ylabel="Frequency", #title="Posterior θ", 
+                bins=bin_edges_θ)
+        
+        # Histogram for λ
+        λ_flat = vec(λ_s[1001:end, :])  # Flatten the λ samples
+        λ_groups = repeat(1:d, inner=n_iter-1000)  # Create group labels for each λ_i
+        λ_max = maximum(λ_s[1001:end, :])
+        bin_edges_λ = range(0, 8, length=bin_length)
+        histogram!(p[2], λ_flat, group=λ_groups, label=permutedims(λ_labels), xlabel="Disaster Intensities λ", ylabel="", alpha=0.6, #title="Disaster Intensities λ", 
+                bins=bin_edges_λ, legend = :topright)
+        
+        # Histogram for t
+        t_flat = vec(t_s[1001:end, 2:d])  # Flatten the t samples
+        t_groups = repeat(1:(d-1), inner=n_iter-1000)  # Create group labels for each breakpoint
+        bin_edges_t = range(1851, 1963, length=bin_length)
+        _breakpoints_string = get_breakpoints_string(d-1, true)
+        histogram!(p[3], t_flat, group=t_groups, label=permutedims(t_labels), xlabel="$_breakpoints_string t", ylabel="", alpha=0.6, #title="Breakpoints t", 
+                bins=bin_edges_t, legend = :topleft)
+        
+        display(p)
+        # savefig(p, "figure_for_$(d-1)_$breakpoints_string.png")
+    end
+    println("Processing part 1 finished \U0001F973")
 end

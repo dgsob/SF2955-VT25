@@ -33,54 +33,56 @@ end
 N = 10000  # Number of samples
 max_lag = 50 # Max time steps for autocorrelation
 # HMC-specific params
-ε = 0.1  # Step size (variable for tuning)
-L = 10   # Number of leapfrog steps (variable for tuning)
+ε = 0.01  # Step size <------------------------------------- variable for tuning
+L = 50   # Number of leapfrog steps <----------------------- variable for tuning
 # MH-specific params
-ζ = 0.5  # Proposal standard deviation (variable for tuning)
+ζ = 0.2  # Proposal standard deviation <-------------------- variable for tuning
 
-# Set seed
-Random.seed!(77)
+function run_part_two()
+    # Set seed
+    Random.seed!(77)
 
-# Run HMC
-hmc_samples, hmc_acceptance_rate = hmc(y, σ, Σ_inv, θ_init, ε, L, N)
+    # Run HMC
+    hmc_samples, hmc_acceptance_rate = hmc(y, σ, Σ_inv, θ_init, ε, L, N)
 
-# Run MH
-mh_samples, mh_acceptance_rate = metropolis_hastings(y, σ, Σ_inv, θ_init, ζ, N)
+    # Run MH
+    mh_samples, mh_acceptance_rate = metropolis_hastings(y, σ, Σ_inv, θ_init, ζ, N)
 
-# Compare acceptance rate
-println("HMC Acceptance rate: ", hmc_acceptance_rate)
-println("MH Acceptance rate: ", mh_acceptance_rate)
+    # Compare acceptance rate
+    println("HMC Acceptance rate: ", hmc_acceptance_rate)
+    println("MH Acceptance rate: ", mh_acceptance_rate)
 
-# Compare heatmaps
-p_heatmap = plot(layout=(1, 2), size=(1000, 300),
-                 left_margin=20Plots.px, bottom_margin=20Plots.px, top_margin=10Plots.px)
-histogram2d!(p_heatmap[1], hmc_samples[:, 1], hmc_samples[:, 2], bins=50, 
-             title="HMC Posterior Samples", xlabel="θ₁", ylabel="θ₂", colorbar=true)
-histogram2d!(p_heatmap[2], mh_samples[:, 1], mh_samples[:, 2], bins=50, 
-             title="MH Posterior Samples", xlabel="θ₁", ylabel="θ₂", colorbar=true)
+    # Compare heatmaps
+    p_heatmap = plot(layout=(1, 2), size=(1000, 300),
+                    left_margin=20Plots.px, bottom_margin=20Plots.px, top_margin=10Plots.px)
+    histogram2d!(p_heatmap[1], hmc_samples[:, 1], hmc_samples[:, 2], bins=50, 
+                title="HMC Posterior Samples", xlabel="θ₁", ylabel="θ₂", colorbar=true)
+    histogram2d!(p_heatmap[2], mh_samples[:, 1], mh_samples[:, 2], bins=50, 
+                title="MH Posterior Samples", xlabel="θ₁", ylabel="θ₂", colorbar=true)
 
-# Compute autocorrelation for HMC and MH
-hmc_acf = autocorrelation(hmc_samples, max_lag)
-mh_acf = autocorrelation(mh_samples, max_lag)
+    # Compute autocorrelation for HMC and MH
+    hmc_acf = autocorrelation(hmc_samples, max_lag)
+    mh_acf = autocorrelation(mh_samples, max_lag)
 
-# Compare autocorrelation
-p_acf = plot(layout=(1, 2), size=(700, 300),
-             left_margin=10Plots.px, bottom_margin=10Plots.px, top_margin=10Plots.px)
-plot!(p_acf[1], 0:max_lag, hmc_acf[:, 1], label="HMC θ₁", title="Autocorrelation for θ₁", 
-      xlabel="Lag", ylabel="ACF", color=:blue)
-plot!(p_acf[1], 0:max_lag, mh_acf[:, 1], label="MH θ₁", linestyle=:dash, color=:red)
-plot!(p_acf[2], 0:max_lag, hmc_acf[:, 2], label="HMC θ₂", title="Autocorrelation for θ₂", 
-      xlabel="Lag", ylabel="ACF", color=:blue)
-plot!(p_acf[2], 0:max_lag, mh_acf[:, 2], label="MH θ₂", linestyle=:dash, color=:red)
+    # Compare autocorrelation
+    p_acf = plot(layout=(1, 2), size=(700, 300),
+                left_margin=10Plots.px, bottom_margin=10Plots.px, top_margin=10Plots.px)
+    plot!(p_acf[1], 0:max_lag, hmc_acf[:, 1], label="HMC θ₁", title="Autocorrelation for θ₁", 
+        xlabel="Lag", ylabel="ACF", color=:blue)
+    plot!(p_acf[1], 0:max_lag, mh_acf[:, 1], label="MH θ₁", linestyle=:dash, color=:red)
+    plot!(p_acf[2], 0:max_lag, hmc_acf[:, 2], label="HMC θ₂", title="Autocorrelation for θ₂", 
+        xlabel="Lag", ylabel="ACF", color=:blue)
+    plot!(p_acf[2], 0:max_lag, mh_acf[:, 2], label="MH θ₂", linestyle=:dash, color=:red)
 
-# Display figures
-# display(p_heatmap)
-# display(p_acf)
+    # Display figures
+    display(p_heatmap)
+    display(p_acf)
 
-# Save figures
-savefig(p_heatmap, "heatmap.png")
-savefig(p_acf, "autocorrelation.png")
+    # Save figures
+    # savefig(p_heatmap, "heatmap.png")
+    # savefig(p_acf, "autocorrelation.png")
 
-println("Processing finished \U0001F973")
+    println("Processing part 2 finished \U0001F973")
+end
 
 
