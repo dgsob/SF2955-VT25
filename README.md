@@ -42,3 +42,23 @@
 1. Sequential Monte Carlo (SMC)
 2. Self-Normalized Importance Sampling (SNIS)
 3. Sequential Importance Sampling with Resampling (SISR)
+
+
+
+------------------------------
+
+## Notes on "5 Markov Chain Monte Carlo (MCMC) Methods"
+### Gibbs sampler
+* updates one variable from the variable vector at a time given its conditional distribution (how it behaves given the other variables)
+* works becasue each step uses conditional distributions, which are pieces of the full distribution
+* the samples match the target distribution after a while (called "burn-in") 
+* apparently it allows the target distribution to be a stationary distribution (need to prove it)
+* pros:
+    * Easy when conditional distributions are simple (like in the script’s examples, where they’re Gamma or Normal).
+* cons:
+    * Slow if variables are strongly related (e.g., in the regression example on page 127, where $\theta_1$ and $\theta_2$ are correlated, causing slower mixing) 
+
+### Slice sampler
+* special case of the Gibbs sampler
+* it is a trick to sample from a distribution when it’s hard to do directly
+* 
